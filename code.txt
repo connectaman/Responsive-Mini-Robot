@@ -1,0 +1,232 @@
+/*  
+ *   Project- Responsive Mini Robot.
+ * Code written by AMAN ULLA
+ * CSE department- Rajarajeswari college of engineering
+ * */
+#include<String.h>
+#include<SoftwareSerial.h>
+#include<Servo.h>
+SoftwareSerial Genotronex(12,13);//rx,tx
+Servo Rhand,Lhand,neck;
+int BluetoothData;
+const int red=11,blue=12;       // eye led's            
+const int headr=2,headb=3,headg=4;         //head-top led
+String voice,text;                                                                        //speech recoginition
+const int right_hand=7,left_hand=6,neck_servo=5;
+//L293D
+// motor one
+int enA = 10;
+int in1 = 9;
+int in2 = 8;
+void setup() 
+{
+  Serial.begin(9600);
+  Genotronex.begin(9600); //Bluetooth
+  Rhand.attach(right_hand);
+  Lhand.attach(left_hand);
+  neck.attach(neck_servo);
+  pinMode(red,OUTPUT); //eye led set to output
+  pinMode(blue,OUTPUT);  // eye led set to output
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(headr, OUTPUT);
+  pinMode(headg, OUTPUT);
+  pinMode(headb, OUTPUT);
+  starting();
+  headlight();
+  normal();
+}
+void loop() 
+{
+  while (Genotronex.available())
+    {
+      delay(10); 
+      char c = Genotronex.read(); 
+      if (c == '#') 
+      {
+          break;
+      }
+      voice += c; 
+  } 
+  if (voice.length() > 0)
+  {
+   
+    Serial.println(voice);
+    Serial.println(text);
+    }
+  text=voice;
+  voice="";
+  if(text=="Max you are a bad robot"|| text == "hey Max you are a bad " || text==" Max you are bad "||text==" hey Max you are bad "||text=="nasty fellow"||text=="you nasty fellow"||text=="you bad robot"||text=="dirty fellow"||text=="dirty boy")
+  {                                             //identifies the robot is sad
+     Serial.println("Sad");
+     sadness();
+  }
+  else if(text=="you are a good robot"||text==" Mac you are a good robot" ||text=="hey Max you are a good robot"||text==" hey Max you are a good" || text==" Max you are a good" || text=="you are a good boy"||text=="good boy"||text=="good robot"||text=="Excellent robot"||text=="you are good robot")
+  {                                         //Identifies the robot is happy
+    Serial.println("Happy");
+    happy(); 
+  }
+  else if(text=="Max shake hand"||text=="shake hand Max" || text=="hey Max shake hand")
+  {                           //Orders robot to shake hand
+      Serial.println("Shake Right Hand");
+      shake_hand();
+  }
+  else if(text=="Max move forward"||text=="move forward Max"||text=="move front Max"||text==" Max go forward"|| text=="Max go straight")      //Forward movement
+  {
+    Serial.println("Moving forward");
+    forward(3000);
+  }
+  else if(text=="Max move backward" || text=="move back Max"|| text=="go back Max" || text=="Max go reverse")     //Backward movement
+  {
+    Serial.println("Moving backward");
+    backward(3000);
+  }
+  else if(text=="Max raise you hands"||text==" raise your hands"|| text=="max raise hands")
+  {
+    Serial.println("Rasing hands");
+    raisehands();
+  }
+  else if(text=="Max put down your hands"||text=="Max hands down")
+  {
+    Serial.println("Putting hands down");
+    handsdown();
+  }
+  else 
+  {
+    Serial.println("Sorry , text not recoganized....");
+    starting();
+  }
+}
+void starting()
+{
+  int j=0;
+  while(j!=3)
+  {
+  digitalWrite(red,HIGH);
+  delay(500);
+  digitalWrite(red,LOW);
+  delay(500);
+  j++;
+  }
+}
+void shake_hand()
+{
+  int k=0,l;
+  for(k=0;k<91;k++)
+  {
+    Rhand.write(k);
+  }
+  while(k!=3)
+  {
+    for(l=45;l>=0;l--)
+    Rhand.write(l);
+    for(l=0;l<=45;l++)
+    Rhand.write(l);
+    k++;
+  }
+  for(k=90;k>=0;k--)
+  Rhand.write(k);
+}
+void forward(int duration)
+{
+  Serial.println("Moving Forward");
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 50);                   // set speed to 35 out of possible range 0~255
+  delay(duration);
+}
+void brake()
+{
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);  
+}
+void backward(int duration)
+{
+
+  Serial.println("Moving Backward");
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  analogWrite(enA, 50);  // set speed to 35 out of possible range 0~255
+  delay(duration);
+}
+void headlight()
+{
+  digitalWrite(headr,HIGH);
+  digitalWrite(headb,LOW);
+  digitalWrite(headg,LOW);
+  delay(333);
+  digitalWrite(headg,HIGH);
+  digitalWrite(headb,LOW);
+  digitalWrite(headr,LOW);
+  delay(333);
+  digitalWrite(headb,HIGH);
+  digitalWrite(headg,LOW);
+  digitalWrite(headr,LOW);
+  delay(333);
+}
+void normal()
+{
+  digitalWrite(red,HIGH);
+  digitalWrite(blue,LOW);
+}
+void sadness()
+{
+  digitalWrite(blue,HIGH);
+  digitalWrite(red,LOW);
+  // head bend
+  int k;
+  for(k=45;k>=0;k++)
+  {
+    neck.write(k);
+  }
+  delay(3000);
+  for(k=0;k<=45;k++)
+  {
+    neck.write(k);
+  }
+  normal();
+}
+void happy()
+{
+  int k;
+  for(k=0;k<=90;k++)
+  {
+    Rhand.attach(k);
+    Lhand.attach(k);
+  }
+  int j=0;
+  while(j!=3)
+  {
+    digitalWrite(red,LOW);
+    digitalWrite(blue,HIGH);
+    delay(333);
+    digitalWrite(red,HIGH);
+    digitalWrite(blue,LOW);
+    delay(333);
+  }
+  for(k=90;k>=0;k--)
+  {
+    Rhand.attach(k);
+    Lhand.attach(k);
+  }
+  normal();
+}
+void raisehands()
+{
+  int k;
+  for(k=0;k<180;k++)
+  {
+    Rhand.attach(k);
+    Lhand.attach(k);
+  }
+}
+void handsdown()
+{
+  int k;
+  for(k=180;k>=0;k--)
+  {
+    Rhand.attach(k);
+    Lhand.attach(k);
+  }
+}
