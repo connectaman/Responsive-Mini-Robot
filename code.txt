@@ -1,7 +1,6 @@
 /*  
  *   Project- Responsive Mini Robot.
  * Code written by AMAN ULLA
- * CSE department- Rajarajeswari college of engineering
  * */
 #include<String.h>
 #include<SoftwareSerial.h>
